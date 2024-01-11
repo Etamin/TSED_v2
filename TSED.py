@@ -27,21 +27,28 @@ def calculate_node_count(node):
     return count
 def get_Trees(prog,origin,target):
     path='./grammars-v4'
-    match prog:
-        case "java":
+
+    if prog== "java":
             pwd=path+'/java/java/JavaLexer.g4 '+path+"/java/java/JavaParser.g4 compilationUnit "
-        case "python":
+    if prog== "python":
             pwd=path+'/python/python3/Python3Lexer.g4 '+path+"/python/python3/Python3Parser.g4 file_input "
-        case "sql":
+    if prog== "sql":
             pwd=path+'/sql/sqlite/SQLiteLexer.g4 '+path+"/sql/sqlite/SQLiteParser.g4 parse "
-    origin_exec="antlr4-parse "+pwd+origin+" -tree"
+
+    f1=open('temp1.'+prog,'w')
+    f1.write(origin)
+    f1.close()
+    f2=open('temp2.'+prog,'w')
+    f2.write(target)
+    f2.close()
+    origin_exec="antlr4-parse "+pwd+"temp1."+prog+" -tree"
     tree1=subprocess.Popen(origin_exec,stdout=subprocess.PIPE, shell=True,stderr=subprocess.DEVNULL).communicate()
     tree1=re.sub(r':\d+\s', ': ', str(tree1)).replace("{","L_brace").replace("}","R_brace")
     tree1=tree1.replace("(","{").replace(")","}").replace(" ","")
     len1=str(tree1).count("}")
     tree_origin=Tree.from_text(tree1)
 
-    target_exec="antlr4-parse "+pwd+target+" -tree"
+    target_exec="antlr4-parse "+pwd+"temp2."+prog+" -tree"
     tree2=subprocess.Popen(target_exec,stdout=subprocess.PIPE, shell=True,stderr=subprocess.DEVNULL).communicate()
     tree2=re.sub(r':\d+\s', ': ', str(tree2)).replace("{","L_brace").replace("}","R_brace")
     tree2=tree2.replace("(","{").replace(")","}").replace(" ","")
@@ -53,8 +60,11 @@ def get_Trees(prog,origin,target):
 def Calaulte(lan,str1,str2):
     tree1,tree2,max_len=get_Trees(lan,str1,str2)
     apted = APTED(tree1, tree2)
+
     res = apted.compute_edit_distance()
     if res>max_len:
         return(0.0)
     else : return((max_len-res)/max_len) 
 
+
+print(Calaulte("sql","select col1, col2, col3 from table1;","select col5 from singer;"))
